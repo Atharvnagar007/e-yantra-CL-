@@ -46,6 +46,24 @@ from sensor_msgs.msg import CompressedImage, Image
 
 ##################### FUNCTION DEFINITIONS #######################
 
+def r_to_ea(r_mat):
+    sy = np.sqrt(r_mat[0, 0] ** 2 + r_mat[1, 0] ** 2)
+    singular = sy < 1e-6
+
+    if not singular:
+        roll = np.arctan2(r_mat[2, 1], r_mat[2, 2])
+        pitch = np.arctan2(-r_mat[2, 0], sy)
+        yaw = np.arctan2(r_mat[1, 0], r_mat[0, 0])
+    else:
+        roll = np.arctan2(-r_mat[1, 2], r_mat[1, 1])
+        pitch = np.arctan2(-r_mat[2, 0], sy)
+        yaw = 0.0
+    roll = np.degrees(roll)
+    pitch = np.degrees(pitch)
+    yaw = np.degrees(yaw)
+    return roll, pitch, yaw
+
+
 def calculate_rectangle_area(coordinates):
     '''
     Description:    Function to calculate area or detected aruco
@@ -163,7 +181,13 @@ def detect_aruco(image):
         try:
             val = np.linalg.norm(tvecs[i][0])
             distance_from_rgb_list.append(val)
+            R, _ = cv.Rodrigues(rvecs[i])
+            roll, pitch, yaw = r_to_ea(R)
+            angle_aruco_list.append([roll, pitch, yaw])
+            
+            
             cv2.drawFrameAxes(image_cpy, cam_mat, dist_mat, rvecs[i], tvecs[i], 1, 1)
+            
         except Exception as e:
             print(e)    
 
