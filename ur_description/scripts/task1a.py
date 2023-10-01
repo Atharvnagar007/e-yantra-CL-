@@ -216,6 +216,7 @@ class aruco_tf(Node):
             data (Image):    Input depth image frame received from aligned depth camera topic
 
         Returns:
+            Nothing. It just updates the depth_image variable with the np array of the converted and processed ros2 depth image.
         '''
 
         ############ ADD YOUR CODE HERE ############
@@ -229,11 +230,7 @@ class aruco_tf(Node):
         except CvBridgeError as e:
             print(e)
 
-        depth_array = np.array(depth_img)
-
-        return depth_array
-
-
+        self.depth_image = np.array(depth_img)
 
 
     def colorimagecb(self, data):
@@ -245,6 +242,7 @@ class aruco_tf(Node):
             data (Image):    Input coloured raw image frame received from image_raw camera topic
 
         Returns:
+            Nothing, it just updates the cv_image variable with the np array of the coloured RGB image
         '''
 
         ############ ADD YOUR CODE HERE ############
@@ -257,9 +255,7 @@ class aruco_tf(Node):
         except CvBridgeError as e:
             print(e)
 
-        self.color_img = np.array(color_img)
-
-        return color_img
+        self.cv_image = np.array(color_img)
 
 
     def process_image(self):
@@ -289,13 +285,16 @@ class aruco_tf(Node):
         # INSTRUCTIONS & HELP : 
 
         #	->  Get aruco center, distance from rgb, angle, width and ids list from 'detect_aruco_center' defined above
-        centers, distances, angles, widths, ids = detect_aruco()
+        centers, distances, angles, widths, ids = detect_aruco(self.cv_image)
+        centers, distances, angles, widths = np.array(centers),np.array(distances), np.array(angles), np.array(widths)
 
         #   ->  Loop over detected box ids received to calculate position and orientation transform to publish TF 
+        for i,id in enumerate(ids):
 
         #   ->  Use this equation to correct the input aruco angle received from cv2 aruco function 'estimatePoseSingleMarkers' here
         #       It's a correction formula- 
         #       angle_aruco = (0.788*angle_aruco) - ((angle_aruco**2)/3160)
+            angles[i] = (0.788*angles[i]) - ((angles[i]**2)/3160)
 
         #   ->  Then calculate quaternions from roll pitch yaw (where, roll and pitch are 0 while yaw is corrected aruco_angle)
 
