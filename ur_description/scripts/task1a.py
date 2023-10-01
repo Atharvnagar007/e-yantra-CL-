@@ -280,6 +280,7 @@ class aruco_tf(Node):
         centerCamY = 360
         focalX = 931.1829833984375
         focalY = 931.1829833984375
+        aruco_coords = []       #Coordinates of aruco marker relative to the camera (aka transform from the camera to the aruco)
             
 
         ############ ADD YOUR CODE HERE ############
@@ -299,8 +300,10 @@ class aruco_tf(Node):
             angles[i] = (0.788*angles[i]) - ((angles[i]**2)/3160)
 
         #   ->  Then calculate quaternions from roll pitch yaw (where, roll and pitch are 0 while yaw is corrected aruco_angle)
+            #q1,2,3,4 = rollpitchyaw etc
 
         #   ->  Use center_aruco_list to get realsense depth and log them down. (divide by 1000 to convert mm to m)
+            depth = self.depth_image[centers[i][0]][centers[i][1]]
 
         #   ->  Use this formula to rectify x, y, z based on focal length, center value and size of image
         #       x = distance_from_rgb * (sizeCamX - cX - centerCamX) / focalX
@@ -310,8 +313,12 @@ class aruco_tf(Node):
         #               cX, and cY from 'center_aruco_list'
         #               distance_from_rgb is depth of object calculated in previous step
         #               sizeCamX, sizeCamY, centerCamX, centerCamY, focalX and focalY are defined above
+            x = distances[i] * (sizeCamX - centers[i][0] - centerCamX) / focalX
+            y = distances[i] * (sizeCamY - centers[i][1] - centerCamY) / focalY
+            z = distances[i]
 
         #   ->  Now, mark the center points on image frame using cX and cY variables with help of 'cv2.cirle' function 
+            cv2.circle(self.cv_image, centers[i], 0.2, '#CC2288')
 
         #   ->  Here, till now you receive coordinates from camera_link to aruco marker center position. 
         #       So, publish this transform w.r.t. camera_link using Geometry Message - TransformStamped 
