@@ -140,7 +140,7 @@ def detect_aruco(image):
 
     #   ->  Loop over each marker ID detected in frame and calculate area using function defined above (calculate_rectangle_area(coordinates))
     #   ->  Remove tags which are far away from arm's reach positon based on some threshold defined
-    for i,I in enumerate(markerCorners):
+    for i,I in enumerate(markerCorners):  ####marda
         coords = I[0]   #I[0] is just syntax soup for greyscale images. it makes much more sense to think about it in an RGB way. I[0] means red, I[1] green and I[2] blue etc etc. But this isnt an RGB image so here its just I[0] means black and white.
         area, width = calculate_rectangle_area(coords)
         if area > area_threshold:
@@ -161,6 +161,8 @@ def detect_aruco(image):
     #       ->  HINT: You may use 'cv2.drawFrameAxes
     for i,I in enumerate(marker_id_list):
         try:
+            val = np.linalg.norm(tvecs[i][0])
+            distance_from_rgb_list.append(val)
             cv2.drawFrameAxes(image_cpy, cam_mat, dist_mat, rvecs[i], tvecs[i], 1, 1)
         except Exception as e:
             print(e)    
